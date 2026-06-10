@@ -1,0 +1,18 @@
+# Web framework + server
+fastapi
+uvicorn[standard]
+
+# Data validation / typed schemas
+pydantic
+
+# LLM provider SDKs (used in later slices)
+anthropic
+openai
+google-generativeai
+
+# Config / secrets loading
+python-dotenv
+
+# Testing
+pytest
+pytest-asyncio

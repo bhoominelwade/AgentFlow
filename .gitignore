@@ -1,0 +1,34 @@
+# --- Obsidian ---
+# Ignore personal workspace layout & cache (machine-specific).
+# Keep the rest of .obsidian/ if you want to share themes/plugins; otherwise uncomment the whole-folder line.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/.trash/
+# .obsidian/
+
+# --- Python (for when the project code lands) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# --- Secrets / env ---
+.env
+.env.*
+!.env.example
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- Claude Code local settings (machine-specific) ---
+.claude/settings.local.json
+
+# --- Claude reference file (local only, never push) ---
+CLAUDE.md

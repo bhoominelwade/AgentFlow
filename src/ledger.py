@@ -8,6 +8,10 @@ PRICING = {
     "gpt-4o": {"in": 0.0025, "out": 0.01},
     "gpt-4o-mini": {"in": 0.00015, "out": 0.0006},
     "gemini-1.5-flash": {"in": 0.000075, "out": 0.0003},
+    "gemini-1.5-pro": {"in": 0.00125, "out": 0.005},
+    "claude-haiku-4-5": {"in": 0.001, "out": 0.005},
+    "claude-sonnet-4-6": {"in": 0.003, "out": 0.015},
+    "claude-opus-4-8": {"in": 0.005, "out": 0.025},
 }
 
 COUNTERFACTUAL_MODEL = "claude-3-5-sonnet-20241022"

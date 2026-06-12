@@ -160,7 +160,7 @@ Savings = counterfactual − actual
 
 ### Prerequisites
 - Python 3.11+
-- API keys: Anthropic, OpenAI, Google AI
+- **At least one** provider API key — Anthropic, OpenAI, *or* Google AI. The router is **key-agnostic**: give it one key and it routes within that vendor's price tiers (a Gemini key → Flash for easy tasks, Pro for hard ones); give it all three and it routes best-of-breed across vendors.
 
 ### Install
 
@@ -179,6 +179,14 @@ cp .env.example .env
 ```bash
 uvicorn src.main:app --reload
 ```
+
+### Run the end-to-end example (uses whatever key is in `.env`)
+
+```bash
+python examples/research_report.py
+```
+
+Decomposes a goal → builds the DAG → runs the waves on the cheapest capable model per task → prints the cost ledger with **actual vs all-premium savings**.
 
 ### API
 

@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from src.scheduler import Scheduler
@@ -86,3 +88,61 @@ async def test_budget_halt_cancels_later_waves():
     results = await scheduler.run(waves, budget=0.02)  # starts wave 1 & 2, not the 3rd
     ids = {r.task_id for r in results}
     assert ids == {"t1", "t2"}
+
+
+class AlwaysFailProvider:
+    async def complete(self, prompt, model=None):
+        raise RuntimeError("simulated API error")
+
+
+class FlakyProvider:
+    def __init__(self, fail_times=1):
+        self.fail_times = fail_times
+        self.calls = 0
+
+    async def complete(self, prompt, model=None):
+        self.calls += 1
+        if self.calls <= self.fail_times:
+            raise RuntimeError("transient API error")
+        return ProviderResponse(output="recovered", tokens_in=10, tokens_out=20, done=True)
+
+
+class ConcurrencyProbeProvider:
+    def __init__(self):
+        self.current = 0
+        self.peak = 0
+
+    async def complete(self, prompt, model=None):
+        self.current += 1
+        self.peak = max(self.peak, self.current)
+        await asyncio.sleep(0.02)
+        self.current -= 1
+        return ProviderResponse(output="x", tokens_in=10, tokens_out=20, done=True)
+
+
+@pytest.mark.asyncio
+async def test_failing_task_is_isolated_not_fatal():
+    waves = resolve_waves(build_dag([make_task("t1")]))
+    results = await make_scheduler(AlwaysFailProvider()).run(waves, budget=1.0)
+    assert len(results) == 1
+    assert results[0].error is not None
+    assert results[0].output == ""
+
+
+@pytest.mark.asyncio
+async def test_retry_once_then_succeeds():
+    results = await make_scheduler(FlakyProvider(fail_times=1)).run(
+        resolve_waves(build_dag([make_task("t1")])), budget=1.0
+    )
+    assert results[0].error is None
+    assert results[0].output == "recovered"
+
+
+@pytest.mark.asyncio
+async def test_concurrency_is_capped():
+    provider = ConcurrencyProbeProvider()
+    tasks = [make_task(f"t{i}") for i in range(6)]  # one wide wave, all independent
+    waves = resolve_waves(build_dag(tasks))
+    scheduler = Scheduler(Agent(provider), Router(), Ledger(), max_concurrency=2)
+    await scheduler.run(waves, budget=1.0)
+    assert provider.peak <= 2

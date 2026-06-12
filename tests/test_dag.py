@@ -63,3 +63,14 @@ def test_detect_cycle_returns_path_for_cyclic():
     path = detect_cycle(build_dag(tasks))
     assert path is not None
     assert "t1" in path and "t2" in path
+
+
+def test_duplicate_task_ids_raise():
+    tasks = [make_task("t1"), make_task("t1")]
+    with pytest.raises(ValueError):
+        build_dag(tasks)
+
+
+def test_dependency_on_unknown_task_raises():
+    with pytest.raises(ValueError):
+        build_dag([make_task("t1", ["ghost"])])

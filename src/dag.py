@@ -17,7 +17,11 @@ class DAG:
 
 
 def build_dag(tasks: list[Task]) -> DAG:
-    tasks_by_id = {t.id: t for t in tasks}
+    tasks_by_id: dict[str, Task] = {}
+    for t in tasks:
+        if t.id in tasks_by_id:
+            raise ValueError(f"Duplicate task id: '{t.id}'")
+        tasks_by_id[t.id] = t
     children: dict[str, list[str]] = {t.id: [] for t in tasks}
     in_degree = {t.id: len(t.dependencies) for t in tasks}
     for t in tasks:

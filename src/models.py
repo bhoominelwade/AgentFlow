@@ -22,6 +22,7 @@ class AgentResult(BaseModel):
     tokens_out: int
     steps_taken: int
     hit_step_guard: bool
+    error: str | None = None
 
 
 class LedgerEntry(BaseModel):

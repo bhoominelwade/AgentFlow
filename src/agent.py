@@ -1,6 +1,9 @@
+import logging
 from dataclasses import dataclass, field
 
 from src.models import AgentResult, Task
+
+logger = logging.getLogger("agentflow.agent")
 
 
 @dataclass
@@ -38,6 +41,8 @@ class Agent:
             output = response.output
             if response.done:
                 break
+        if hit_step_guard:
+            logger.warning("Step guard hit on task '%s' after %d steps", context_packet.task.id, steps)
         return AgentResult(
             task_id=context_packet.task.id,
             output=output,

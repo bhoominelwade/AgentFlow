@@ -5,13 +5,14 @@ from fastapi import FastAPI, HTTPException
 
 import src.providers as providers
 from src.agent import Agent
+from src.dag import CycleError
 from src.engine import run_goal
 from src.ledger import Ledger
 from src.models import RunRequest, RunResult
-from src.orchestrator import Orchestrator
+from src.orchestrator import Orchestrator, OrchestratorError
 from src.router import Router
 from src.scheduler import Scheduler
-from src.vendors import select_vendor_config
+from src.vendors import NoProviderKeyError, select_vendor_config
 
 load_dotenv()
 
@@ -26,15 +27,25 @@ def health():
 
 @app.post("/run")
 async def post_run(request: RunRequest) -> RunResult:
+    try:
+        config = select_vendor_config()
+    except NoProviderKeyError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
     run_id = str(uuid.uuid4())
-    config = select_vendor_config()
     orchestrator = Orchestrator(providers, model=config.orchestrator_model)
     scheduler = Scheduler(
         Agent(providers),
         Router(matrix=config.matrix, fallback_model=config.fallback_model),
         Ledger(),
     )
-    result = await run_goal(run_id, request.goal, request.budget_usd, orchestrator, scheduler)
+    try:
+        result = await run_goal(run_id, request.goal, request.budget_usd, orchestrator, scheduler)
+    except CycleError as exc:
+        raise HTTPException(status_code=400, detail={"error": "cycle detected", "cycle": exc.path})
+    except (OrchestratorError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
     RUNS[run_id] = result
     return result
 

@@ -45,7 +45,7 @@ def prompt_for(provider, desc):
 
 
 def make_scheduler(provider, router=None):
-    return Scheduler(Agent(provider), router or Router(), Ledger())
+    return Scheduler(Agent(provider), router or Router(), Ledger(), retry_backoff=0)
 
 
 @pytest.mark.asyncio

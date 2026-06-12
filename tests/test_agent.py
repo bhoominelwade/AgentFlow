@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 
 from src.agent import Agent, ContextPacket
@@ -35,3 +37,12 @@ async def test_token_counts_match_provider():
     result = await agent.run(ContextPacket(task=make_task()), model="mock-model")
     assert result.tokens_in == provider.tokens_in_per_call
     assert result.tokens_out == provider.tokens_out_per_call
+
+
+@pytest.mark.asyncio
+async def test_step_guard_logs_warning(caplog):
+    agent = Agent(MockProvider(finish_after_steps=2), max_steps=1)
+    with caplog.at_level(logging.WARNING):
+        result = await agent.run(ContextPacket(task=make_task()), model="mock-model")
+    assert result.hit_step_guard is True
+    assert any("step guard" in r.getMessage().lower() for r in caplog.records)

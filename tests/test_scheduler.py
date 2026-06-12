@@ -15,7 +15,7 @@ class RecordingProvider:
         self.tokens_in = tokens_in
         self.tokens_out = tokens_out
 
-    async def complete(self, prompt):
+    async def complete(self, prompt, model=None):
         self.prompts.append(prompt)
         first_line = prompt.splitlines()[0] if prompt else ""
         return ProviderResponse(

@@ -31,7 +31,7 @@ class Agent:
             if steps >= self.max_steps:
                 hit_step_guard = True
                 break
-            response = await self.provider.complete(prompt)
+            response = await self.provider.complete(prompt, model)
             steps += 1
             tokens_in += response.tokens_in
             tokens_out += response.tokens_out

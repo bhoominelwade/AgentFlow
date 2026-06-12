@@ -9,7 +9,7 @@ class MockProvider:
         self.tokens_out_per_call = tokens_out_per_call
         self.calls = 0
 
-    async def complete(self, prompt: str) -> ProviderResponse:
+    async def complete(self, prompt: str, model: str | None = None) -> ProviderResponse:
         self.calls += 1
         return ProviderResponse(
             output=f"[mock] response to: {prompt[:40]}",
